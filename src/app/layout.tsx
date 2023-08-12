@@ -1,3 +1,4 @@
+import { AppHeader, BottomBar, SideBar, SidePanel } from '@/components/layout'
 import './globals.css'
 import type { Metadata } from 'next'
 import { Noto_Sans } from 'next/font/google'
@@ -17,9 +18,18 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={noto_sans.className}>
-        <main>
-          {children}
-        </main>
+
+        <AppHeader />
+        <div className='flex h-[calc(100dvh-5rem)]'>
+          <SideBar />
+          <SidePanel />
+          <main className='flex-1'>
+            {children}
+          </main>
+        </div>
+
+        <BottomBar />
+
       </body>
     </html>
   )
