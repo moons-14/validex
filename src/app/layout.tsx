@@ -16,7 +16,11 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={noto_sans.className}>{children}</body>
+      <body className={noto_sans.className}>
+        <main>
+          {children}
+        </main>
+      </body>
     </html>
   )
 }
