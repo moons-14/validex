@@ -1,4 +1,4 @@
-import { Code, Cpu, Home, LayoutDashboard, LayoutPanelLeft, ListVideo, Play, Settings } from "lucide-react"
+import { Code, Cpu, Home, LayoutDashboard, LayoutPanelLeft, ListVideo, PencilRuler, Play, Settings } from "lucide-react"
 
 export const TabBar = () => {
     return (<>
@@ -9,7 +9,7 @@ export const TabBar = () => {
             </button>
             <button className="flex gap-2 items-center px-8 border-gray-400 border-r hover:bg-gray-200 shrink-0">
                 <Settings size={16} />
-                Setting
+                Abi
             </button>
             <button className="flex gap-2 items-center px-8 border-gray-400 border-r hover:bg-gray-200 shrink-0">
                 <Play size={16} />
@@ -18,6 +18,10 @@ export const TabBar = () => {
             <button className="flex gap-2 items-center px-8 border-gray-400 border-r hover:bg-gray-200 shrink-0">
                 <Code size={16} />
                 Ethers
+            </button>
+            <button className="flex gap-2 items-center px-8 border-gray-400 border-r hover:bg-gray-200 shrink-0">
+                <PencilRuler size={16} />
+                Byte Tool
             </button>
             <button className="flex gap-2 items-center px-8 border-gray-400 border-r hover:bg-gray-200 shrink-0">
                 <ListVideo size={16} />
