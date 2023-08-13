@@ -2,6 +2,7 @@ import { AppHeader, BottomBar, SideBar, SidePanel, TabBar } from '@/components/l
 import './globals.css'
 import type { Metadata } from 'next'
 import { Noto_Sans } from 'next/font/google'
+import { Web3Provider } from '@/components/web3'
 
 const noto_sans = Noto_Sans({ subsets: ['latin'], weight: ["400"] })
 
@@ -19,17 +20,18 @@ export default function RootLayout({
     <html lang="en">
       <body className={noto_sans.className}>
 
-        <AppHeader />
-        <div className='flex h-[calc(100dvh-5rem)]'>
-          <SideBar />
-          <SidePanel />
-          <div className='flex-1'>
-            <TabBar />
-            {children}
+        <Web3Provider>
+          <AppHeader />
+          <div className='flex h-[calc(100dvh-5rem)]'>
+            <SideBar />
+            <SidePanel />
+            <div className='flex-1'>
+              <TabBar />
+              {children}
+            </div>
           </div>
-        </div>
-
-        <BottomBar />
+          <BottomBar />
+        </Web3Provider>
 
       </body>
     </html>
