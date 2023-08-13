@@ -1,5 +1,5 @@
-import { create } from 'zustand'
 import { persist, createJSONStorage } from 'zustand/middleware'
+import { createWithEqualityFn } from 'zustand/traditional'
 
 export type ValidexStore = {
     activeSidePanel: "project" | "search" | "share" | "history" | "docs" | null,
@@ -47,9 +47,66 @@ export type ValidexStore = {
         functionName: string,
     }[],
     searchWord: string,
+    updateActiveSidePanel: (activeSidePanel: ValidexStore["activeSidePanel"]) => void,
+    addProject: (project: {
+        id: string,
+        name: string,
+        plan: "free" | "team",
+    }) => void,
+    deleteProject: (id: string) => void,
+    updateProjectName: (id: string, name: string) => void,
+    updateProjectPlan: (id: string, plan: "free" | "team") => void,
+    updateProjectContractFilter: (id: string, contractFilter: string) => void,
+    updateProjectActiveContact: (id: string, activeContact: string) => void,
+    addContact: (projectId: string, contact: {
+        id: string,
+        address: string,
+        name: string,
+    }) => void,
+    deleteContact: (projectId: string, id: string) => void,
+    updateContactAddress: (projectId: string, id: string, address: string) => void,
+    updateContactName: (projectId: string, id: string, name: string) => void,
+    updateContactActiveTab: (projectId: string, id: string, activeTab: ValidexStore["projects"][0]["contacts"][0]["activeTab"]) => void,
+    updateContactSearchTransact: (projectId: string, id: string, searchTransact: string) => void,
+    updateContactTransactFilter: (projectId: string, id: string, transactFilter: ValidexStore["projects"][0]["contacts"][0]["callAndTransact"]["transactFilter"]) => void,
+    addTransacts: (projectId: string, id: string, transacts: {
+        id: string,
+        functionName: string,
+        args: {
+            id: string,
+            name: string,
+            type: string,
+            value: string,
+        }[],
+        type: "call" | "transact",
+        payable: boolean,
+        result: string,
+        resultError: string,
+        pin: boolean,
+    }[]) => void,
+    deleteTransact: (projectId: string, id: string, transactId: string) => void,
+    updateTransactFunctionName: (projectId: string, id: string, transactId: string, functionName: string) => void,
+    updateTransactArgs: (projectId: string, id: string, transactId: string, args: {
+        id: string,
+        name: string,
+        type: string,
+        value: string,
+    }[]) => void,
+    updateTransactType: (projectId: string, id: string, transactId: string, type: "call" | "transact") => void,
+    updateTransactPayable: (projectId: string, id: string, transactId: string, payable: boolean) => void,
+    updateTransactResult: (projectId: string, id: string, transactId: string, result: string) => void,
+    updateTransactResultError: (projectId: string, id: string, transactId: string, resultError: string) => void,
+    updateTransactPin: (projectId: string, id: string, transactId: string, pin: boolean) => void,
+    updateAbi: (projectId: string, id: string, abi: string) => void,
+    updateUseProxy: (projectId: string, id: string, useProxy: boolean) => void,
+    updateActiveProject: (projectId: string) => void,
+    updateActiveContact: (projectId: string, id: string) => void,
+    addGlobalPin: (id: string, functionName: string) => void,
+    removeGlobalPin: (id: string) => void,
+    updateSearchWorld: (searchWord: string) => void,
 }
 
-export const useValidexStore = create(
+export const useValidexStore = createWithEqualityFn(
     persist<ValidexStore>(
         (set, get) => ({
             activeSidePanel: null,
@@ -342,5 +399,6 @@ export const useValidexStore = create(
             name: 'validex-storage',
             storage: createJSONStorage(() => localStorage)
         }
-    )
+    ),
+    Object.is
 )

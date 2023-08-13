@@ -32,7 +32,9 @@ export const Web3Provider = ({
                     window.ethereum.request({ method: 'eth_chainId' })
                         .then((hexChainId: string) => {
                             setChainId(parseInt(hexChainId))
-                            setMounted(true)
+                            if (accounts.length > 0 && parseInt(hexChainId)) {
+                                setMounted(true)
+                            }
                         })
                         .catch((err: any) => {
                             setConnectWalletError(err.message)

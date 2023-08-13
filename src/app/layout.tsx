@@ -3,6 +3,7 @@ import './globals.css'
 import type { Metadata } from 'next'
 import { Noto_Sans } from 'next/font/google'
 import { Web3Provider } from '@/components/web3'
+import { Toaster } from '@/components/ui/toaster'
 
 const noto_sans = Noto_Sans({ subsets: ['latin'], weight: ["400"] })
 
@@ -31,6 +32,7 @@ export default function RootLayout({
             </div>
           </div>
           <BottomBar />
+          <Toaster />
         </Web3Provider>
 
       </body>
