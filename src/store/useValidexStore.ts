@@ -2,12 +2,11 @@ import { persist, createJSONStorage } from 'zustand/middleware'
 import { createWithEqualityFn } from 'zustand/traditional'
 
 export type ValidexStore = {
-    activeSidePanel: "project" | "search" | "share" | "history" | "docs" | null,
+    activeSidePanel: "project" | "search" | "share" | "history" | null,
     projects: {
         id: string,
         name: string,
-        plan: "free" | "team",
-        contacts: {
+        contracts: {
             id: string,
             address: string,
             name: string,
@@ -37,38 +36,37 @@ export type ValidexStore = {
             }
         }[],
         contractFilter: string,
-        activeContact: string,
+        activeContract: string,
     }[],
     activeProject: string | null,
-    activeContact: string | null,
+    activeContract: string | null,
     customizePanel: {}[],
-    globalContactPins: {
+    globalContractPins: {
         id: string,
         functionName: string,
     }[],
     searchWord: string,
+    openNewTab: boolean,
     updateActiveSidePanel: (activeSidePanel: ValidexStore["activeSidePanel"]) => void,
     addProject: (project: {
         id: string,
-        name: string,
-        plan: "free" | "team",
+        name: string
     }) => void,
     deleteProject: (id: string) => void,
     updateProjectName: (id: string, name: string) => void,
-    updateProjectPlan: (id: string, plan: "free" | "team") => void,
     updateProjectContractFilter: (id: string, contractFilter: string) => void,
-    updateProjectActiveContact: (id: string, activeContact: string) => void,
-    addContact: (projectId: string, contact: {
+    updateProjectActiveContract: (id: string, activeContract: string) => void,
+    addContract: (projectId: string, contract: {
         id: string,
         address: string,
         name: string,
     }) => void,
-    deleteContact: (projectId: string, id: string) => void,
-    updateContactAddress: (projectId: string, id: string, address: string) => void,
-    updateContactName: (projectId: string, id: string, name: string) => void,
-    updateContactActiveTab: (projectId: string, id: string, activeTab: ValidexStore["projects"][0]["contacts"][0]["activeTab"]) => void,
-    updateContactSearchTransact: (projectId: string, id: string, searchTransact: string) => void,
-    updateContactTransactFilter: (projectId: string, id: string, transactFilter: ValidexStore["projects"][0]["contacts"][0]["callAndTransact"]["transactFilter"]) => void,
+    deleteContract: (projectId: string, id: string) => void,
+    updateContractAddress: (projectId: string, id: string, address: string) => void,
+    updateContractName: (projectId: string, id: string, name: string) => void,
+    updateContractActiveTab: (projectId: string, id: string, activeTab: ValidexStore["projects"][0]["contracts"][0]["activeTab"]) => void,
+    updateContractSearchTransact: (projectId: string, id: string, searchTransact: string) => void,
+    updateContractTransactFilter: (projectId: string, id: string, transactFilter: ValidexStore["projects"][0]["contracts"][0]["callAndTransact"]["transactFilter"]) => void,
     addTransacts: (projectId: string, id: string, transacts: {
         id: string,
         functionName: string,
@@ -100,10 +98,11 @@ export type ValidexStore = {
     updateAbi: (projectId: string, id: string, abi: string) => void,
     updateUseProxy: (projectId: string, id: string, useProxy: boolean) => void,
     updateActiveProject: (projectId: string) => void,
-    updateActiveContact: (projectId: string, id: string) => void,
+    updateActiveContract: (id: string) => void,
     addGlobalPin: (id: string, functionName: string) => void,
     removeGlobalPin: (id: string) => void,
     updateSearchWorld: (searchWord: string) => void,
+    updateOpenNewTab: (openNewTab: boolean) => void,
 }
 
 export const useValidexStore = createWithEqualityFn(
@@ -113,36 +112,35 @@ export const useValidexStore = createWithEqualityFn(
             updateActiveSidePanel: (activeSidePanel: ValidexStore["activeSidePanel"]) => set({ activeSidePanel: activeSidePanel }),
             projects: [],
             activeProject: null,
-            activeContact: null,
+            activeContract: null,
             customizePanel: [],
-            globalContactPins: [],
+            globalContractPins: [],
             searchWord: '',
+            openNewTab: false,
             addProject: (project: {
                 id: string,
                 name: string,
-                plan: "free" | "team",
             }) => set({
                 projects: [...get().projects, {
                     ...project,
-                    contacts: [],
+                    contracts: [],
                     contractFilter: "",
-                    activeContact: "",
+                    activeContract: "",
                 }]
             }),
             deleteProject: (id: string) => set({ projects: get().projects.filter(project => project.id !== id) }),
             updateProjectName: (id: string, name: string) => set({ projects: get().projects.map(project => project.id === id ? { ...project, name: name } : project) }),
-            updateProjectPlan: (id: string, plan: "free" | "team") => set({ projects: get().projects.map(project => project.id === id ? { ...project, plan: plan } : project) }),
             updateProjectContractFilter: (id: string, contractFilter: string) => set({ projects: get().projects.map(project => project.id === id ? { ...project, contractFilter: contractFilter } : project) }),
-            updateProjectActiveContact: (id: string, activeContact: string) => set({ projects: get().projects.map(project => project.id === id ? { ...project, activeContact: activeContact } : project) }),
-            addContact: (projectId: string, contact: {
+            updateProjectActiveContract: (id: string, activeContract: string) => set({ projects: get().projects.map(project => project.id === id ? { ...project, activeContract: activeContract } : project) }),
+            addContract: (projectId: string, contract: {
                 id: string,
                 address: string,
                 name: string,
             }) => set({
                 projects: get().projects.map(project => project.id === projectId ? {
                     ...project,
-                    contacts: [...project.contacts, {
-                        ...contact,
+                    contracts: [...project.contracts, {
+                        ...contract,
                         activeTab: "abi",
                         callAndTransact: {
                             searchTransact: "",
@@ -156,52 +154,52 @@ export const useValidexStore = createWithEqualityFn(
                     }]
                 } : project)
             }),
-            deleteContact: (projectId: string, id: string) => set({
+            deleteContract: (projectId: string, id: string) => set({
                 projects: get().projects.map(project => project.id === projectId ? {
                     ...project,
-                    contacts: project.contacts.filter(contact => contact.id !== id)
+                    contracts: project.contracts.filter(contract => contract.id !== id)
                 } : project)
             }),
-            updateContactAddress: (projectId: string, id: string, address: string) => set({
+            updateContractAddress: (projectId: string, id: string, address: string) => set({
                 projects: get().projects.map(project => project.id === projectId ? {
                     ...project,
-                    contacts: project.contacts.map(contact => contact.id === id ? { ...contact, address: address } : contact)
+                    contracts: project.contracts.map(contract => contract.id === id ? { ...contract, address: address } : contract)
                 } : project)
             }),
-            updateContactName: (projectId: string, id: string, name: string) => set({
+            updateContractName: (projectId: string, id: string, name: string) => set({
                 projects: get().projects.map(project => project.id === projectId ? {
                     ...project,
-                    contacts: project.contacts.map(contact => contact.id === id ? { ...contact, name: name } : contact)
+                    contracts: project.contracts.map(contract => contract.id === id ? { ...contract, name: name } : contract)
                 } : project)
             }),
-            updateContactActiveTab: (projectId: string, id: string, activeTab: ValidexStore["projects"][0]["contacts"][0]["activeTab"]) => set({
+            updateContractActiveTab: (projectId: string, id: string, activeTab: ValidexStore["projects"][0]["contracts"][0]["activeTab"]) => set({
                 projects: get().projects.map(project => project.id === projectId ? {
                     ...project,
-                    contacts: project.contacts.map(contact => contact.id === id ? { ...contact, activeTab: activeTab } : contact)
+                    contracts: project.contracts.map(contract => contract.id === id ? { ...contract, activeTab: activeTab } : contract)
                 } : project)
             }),
-            updateContactSearchTransact: (projectId: string, id: string, searchTransact: string) => set({
+            updateContractSearchTransact: (projectId: string, id: string, searchTransact: string) => set({
                 projects: get().projects.map(project => project.id === projectId ? {
                     ...project,
-                    contacts: project.contacts.map(contact => contact.id === id ? {
-                        ...contact,
+                    contracts: project.contracts.map(contract => contract.id === id ? {
+                        ...contract,
                         callAndTransact: {
-                            ...contact.callAndTransact,
+                            ...contract.callAndTransact,
                             searchTransact: searchTransact
                         }
-                    } : contact)
+                    } : contract)
                 } : project)
             }),
-            updateContactTransactFilter: (projectId: string, id: string, transactFilter: ValidexStore["projects"][0]["contacts"][0]["callAndTransact"]["transactFilter"]) => set({
+            updateContractTransactFilter: (projectId: string, id: string, transactFilter: ValidexStore["projects"][0]["contracts"][0]["callAndTransact"]["transactFilter"]) => set({
                 projects: get().projects.map(project => project.id === projectId ? {
                     ...project,
-                    contacts: project.contacts.map(contact => contact.id === id ? {
-                        ...contact,
+                    contracts: project.contracts.map(contract => contract.id === id ? {
+                        ...contract,
                         callAndTransact: {
-                            ...contact.callAndTransact,
+                            ...contract.callAndTransact,
                             transactFilter: transactFilter
                         }
-                    } : contact)
+                    } : contract)
                 } : project)
             }),
             addTransacts: (projectId: string, id: string, transacts: {
@@ -221,40 +219,40 @@ export const useValidexStore = createWithEqualityFn(
             }[]) => set({
                 projects: get().projects.map(project => project.id === projectId ? {
                     ...project,
-                    contacts: project.contacts.map(contact => contact.id === id ? {
-                        ...contact,
+                    contracts: project.contracts.map(contract => contract.id === id ? {
+                        ...contract,
                         callAndTransact: {
-                            ...contact.callAndTransact,
-                            transactList: [...contact.callAndTransact.transactList, ...transacts]
+                            ...contract.callAndTransact,
+                            transactList: [...contract.callAndTransact.transactList, ...transacts]
                         }
-                    } : contact)
+                    } : contract)
                 } : project)
             }),
             deleteTransact: (projectId: string, id: string, transactId: string) => set({
                 projects: get().projects.map(project => project.id === projectId ? {
                     ...project,
-                    contacts: project.contacts.map(contact => contact.id === id ? {
-                        ...contact,
+                    contracts: project.contracts.map(contract => contract.id === id ? {
+                        ...contract,
                         callAndTransact: {
-                            ...contact.callAndTransact,
-                            transactList: contact.callAndTransact.transactList.filter(transact => transact.id !== transactId)
+                            ...contract.callAndTransact,
+                            transactList: contract.callAndTransact.transactList.filter(transact => transact.id !== transactId)
                         }
-                    } : contact)
+                    } : contract)
                 } : project)
             }),
             updateTransactFunctionName: (projectId: string, id: string, transactId: string, functionName: string) => set({
                 projects: get().projects.map(project => project.id === projectId ? {
                     ...project,
-                    contacts: project.contacts.map(contact => contact.id === id ? {
-                        ...contact,
+                    contracts: project.contracts.map(contract => contract.id === id ? {
+                        ...contract,
                         callAndTransact: {
-                            ...contact.callAndTransact,
-                            transactList: contact.callAndTransact.transactList.map(transact => transact.id === transactId ? {
+                            ...contract.callAndTransact,
+                            transactList: contract.callAndTransact.transactList.map(transact => transact.id === transactId ? {
                                 ...transact,
                                 functionName: functionName
                             } : transact)
                         }
-                    } : contact)
+                    } : contract)
                 } : project)
             }),
             updateTransactArgs: (projectId: string, id: string, transactId: string, args: {
@@ -265,123 +263,123 @@ export const useValidexStore = createWithEqualityFn(
             }[]) => set({
                 projects: get().projects.map(project => project.id === projectId ? {
                     ...project,
-                    contacts: project.contacts.map(contact => contact.id === id ? {
-                        ...contact,
+                    contracts: project.contracts.map(contract => contract.id === id ? {
+                        ...contract,
                         callAndTransact: {
-                            ...contact.callAndTransact,
-                            transactList: contact.callAndTransact.transactList.map(transact => transact.id === transactId ? {
+                            ...contract.callAndTransact,
+                            transactList: contract.callAndTransact.transactList.map(transact => transact.id === transactId ? {
                                 ...transact,
                                 args: args
                             } : transact)
                         }
-                    } : contact)
+                    } : contract)
                 } : project)
             }),
             updateTransactType: (projectId: string, id: string, transactId: string, type: "call" | "transact") => set({
                 projects: get().projects.map(project => project.id === projectId ? {
                     ...project,
-                    contacts: project.contacts.map(contact => contact.id === id ? {
-                        ...contact,
+                    contracts: project.contracts.map(contract => contract.id === id ? {
+                        ...contract,
                         callAndTransact: {
-                            ...contact.callAndTransact,
-                            transactList: contact.callAndTransact.transactList.map(transact => transact.id === transactId ? {
+                            ...contract.callAndTransact,
+                            transactList: contract.callAndTransact.transactList.map(transact => transact.id === transactId ? {
                                 ...transact,
                                 type: type
                             } : transact)
                         }
-                    } : contact)
+                    } : contract)
                 } : project)
             }),
             updateTransactPayable: (projectId: string, id: string, transactId: string, payable: boolean) => set({
                 projects: get().projects.map(project => project.id === projectId ? {
                     ...project,
-                    contacts: project.contacts.map(contact => contact.id === id ? {
-                        ...contact,
+                    contracts: project.contracts.map(contract => contract.id === id ? {
+                        ...contract,
                         callAndTransact: {
-                            ...contact.callAndTransact,
-                            transactList: contact.callAndTransact.transactList.map(transact => transact.id === transactId ? {
+                            ...contract.callAndTransact,
+                            transactList: contract.callAndTransact.transactList.map(transact => transact.id === transactId ? {
                                 ...transact,
                                 payable: payable
                             } : transact)
                         }
-                    } : contact)
+                    } : contract)
                 } : project)
             }),
             updateTransactResult: (projectId: string, id: string, transactId: string, result: string) => set({
                 projects: get().projects.map(project => project.id === projectId ? {
                     ...project,
-                    contacts: project.contacts.map(contact => contact.id === id ? {
-                        ...contact,
+                    contracts: project.contracts.map(contract => contract.id === id ? {
+                        ...contract,
                         callAndTransact: {
-                            ...contact.callAndTransact,
-                            transactList: contact.callAndTransact.transactList.map(transact => transact.id === transactId ? {
+                            ...contract.callAndTransact,
+                            transactList: contract.callAndTransact.transactList.map(transact => transact.id === transactId ? {
                                 ...transact,
                                 result: result
                             } : transact)
                         }
-                    } : contact)
+                    } : contract)
                 } : project)
             }),
             updateTransactResultError: (projectId: string, id: string, transactId: string, resultError: string) => set({
                 projects: get().projects.map(project => project.id === projectId ? {
                     ...project,
-                    contacts: project.contacts.map(contact => contact.id === id ? {
-                        ...contact,
+                    contracts: project.contracts.map(contract => contract.id === id ? {
+                        ...contract,
                         callAndTransact: {
-                            ...contact.callAndTransact,
-                            transactList: contact.callAndTransact.transactList.map(transact => transact.id === transactId ? {
+                            ...contract.callAndTransact,
+                            transactList: contract.callAndTransact.transactList.map(transact => transact.id === transactId ? {
                                 ...transact,
                                 resultError: resultError
                             } : transact)
                         }
-                    } : contact)
+                    } : contract)
                 } : project)
             }),
             updateTransactPin: (projectId: string, id: string, transactId: string, pin: boolean) => set({
                 projects: get().projects.map(project => project.id === projectId ? {
                     ...project,
-                    contacts: project.contacts.map(contact => contact.id === id ? {
-                        ...contact,
+                    contracts: project.contracts.map(contract => contract.id === id ? {
+                        ...contract,
                         callAndTransact: {
-                            ...contact.callAndTransact,
+                            ...contract.callAndTransact,
                             pin: pin,
                         }
-                    } : contact)
+                    } : contract)
                 } : project)
             }),
             updateAbi: (projectId: string, id: string, abi: string) => set({
                 projects: get().projects.map(project => project.id === projectId ? {
                     ...project,
-                    contacts: project.contacts.map(contact => contact.id === id ? {
-                        ...contact,
+                    contracts: project.contracts.map(contract => contract.id === id ? {
+                        ...contract,
                         abi: {
-                            ...contact.abi,
+                            ...contract.abi,
                             abi: abi
                         }
-                    } : contact)
+                    } : contract)
                 } : project)
             }),
             updateUseProxy: (projectId: string, id: string, useProxy: boolean) => set({
                 projects: get().projects.map(project => project.id === projectId ? {
                     ...project,
-                    contacts: project.contacts.map(contact => contact.id === id ? {
-                        ...contact,
+                    contracts: project.contracts.map(contract => contract.id === id ? {
+                        ...contract,
                         abi: {
-                            ...contact.abi,
+                            ...contract.abi,
                             proxy: useProxy
                         }
-                    } : contact)
+                    } : contract)
                 } : project)
             }),
             updateActiveProject: (projectId: string) => set({
                 activeProject: projectId
             }),
-            updateActiveContact: (projectId: string, id: string) => set({
-                activeContact: id
+            updateActiveContract: (id: string) => set({
+                activeContract: id
             }),
             addGlobalPin: (id: string, functionName: string) => set({
-                globalContactPins: [
-                    ...get().globalContactPins.filter(pin => pin.id !== id),
+                globalContractPins: [
+                    ...get().globalContractPins.filter(pin => pin.id !== id),
                     {
                         id: id,
                         functionName: functionName
@@ -389,10 +387,13 @@ export const useValidexStore = createWithEqualityFn(
                 ]
             }),
             removeGlobalPin: (id: string) => set({
-                globalContactPins: get().globalContactPins.filter(pin => pin.id !== id)
+                globalContractPins: get().globalContractPins.filter(pin => pin.id !== id)
             }),
             updateSearchWorld: (searchWord: string) => set({
                 searchWord: searchWord
+            }),
+            updateOpenNewTab: (openNewTab: boolean) => set({
+                openNewTab: openNewTab
             }),
         }),
         {

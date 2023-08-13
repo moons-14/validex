@@ -3,6 +3,9 @@ import { ProjectPanel } from "../ProjectPanel"
 import { AddressButton } from "../AddressButton"
 import { useValidexStore } from "@/store/useValidexStore"
 import shallow from "zustand/shallow"
+import { SearchPanel } from "../SearchPanel"
+import { SharePanel } from "../SharePanel"
+import { HistoryPanel } from "../HistoryPanel"
 
 export const SidePanel = () => {
 
@@ -18,6 +21,18 @@ export const SidePanel = () => {
 
                     {
                         activeSidePanel == "project" ? <ProjectPanel /> : null
+                    }
+
+                    {
+                        activeSidePanel == "search" ? <SearchPanel /> : null
+                    }
+
+                    {
+                        activeSidePanel == "share" ? <SharePanel /> : null
+                    }
+
+                    {
+                        activeSidePanel == "history" ? <HistoryPanel /> : null
                     }
 
                     <AddressButton />

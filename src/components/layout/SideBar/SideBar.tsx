@@ -20,10 +20,6 @@ const SideBarIcons = [
     {
         icon: <FileClock size={24} color="#404040" />,
         id: "history"
-    },
-    {
-        icon: <ScrollText size={24} color="#404040" />,
-        id: "notes"
     }
 ]
 
@@ -39,7 +35,7 @@ export const SideBar = () => {
             {
                 SideBarIcons.map((icon, index) => {
                     return (<button border-r
-                        className={clsx("px-5 py-4 hover:bg-gray-100 border-gray-400 border-r",
+                        className={clsx("px-5 py-4 hover:bg-gray-100",
                             activeSidePanel === icon.id ? "bg-gray-200" : ""
                         )}
                         key={"sidebar-button-" + index}

@@ -33,42 +33,45 @@ import {
     Popover,
     PopoverContent,
     PopoverTrigger,
-} from "@/components/ui/popover"
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select"
-
-const groups = [
-    {
-        label: "free plan",
-        teams: [
-            {
-                label: "World Contact",
-                value: "fa2740db-f6a5-4244-bdc1-a6069b4aae76",
-            },
-        ],
-    },
-]
-
-type Team = (typeof groups)[number]["teams"][number]
+} from "@/components/ui/popover";
+import { useValidexStore } from "@/store/useValidexStore"
+import shallow from "zustand/shallow"
+import { useToast } from "@/components/ui/use-toast"
 
 type PopoverTriggerProps = React.ComponentPropsWithoutRef<typeof PopoverTrigger>
 
 interface ProjectSwitchProps extends PopoverTriggerProps { }
 
 export default function ProjectSwitch({ className }: ProjectSwitchProps) {
-    const [open, setOpen] = React.useState(false)
-    const [showNewTeamDialog, setShowNewTeamDialog] = React.useState(false)
-    const [selectedTeam, setSelectedTeam] = React.useState<Team>(
-        groups[0].teams[0]
-    )
+    const { toast } = useToast()
+
+    const [open, setOpen] = React.useState(false);
+    const [newProjectName, setNewProjectName] = React.useState("");
+    const { projects, activeProject, updateActiveProject, openNewTab, updateOpenNewTab, addProject } = useValidexStore(
+        (state) => ({
+            projects: state.projects, activeProject: state.activeProject, updateActiveProject: state.updateActiveProject, openNewTab: state.openNewTab, updateOpenNewTab: state.updateOpenNewTab, addProject: state.addProject
+        }),
+        shallow
+    );
+
+    const createProject = () => {
+        if (newProjectName) {
+            const projectUUID = crypto.randomUUID();
+            addProject({
+                id: projectUUID,
+                name: newProjectName,
+            })
+            updateActiveProject(projectUUID)
+            updateOpenNewTab(false)
+        } else {
+            toast({
+                title: "Please enter a project name",
+            })
+        }
+    }
 
     return (
-        <Dialog open={showNewTeamDialog} onOpenChange={setShowNewTeamDialog}>
+        <Dialog open={openNewTab} onOpenChange={updateOpenNewTab}>
             <Popover open={open} onOpenChange={setOpen}>
                 <PopoverTrigger asChild>
                     <Button
@@ -78,7 +81,9 @@ export default function ProjectSwitch({ className }: ProjectSwitchProps) {
                         aria-label="Select a project"
                         className={cn("w-56 xl:w-64 justify-between", className)}
                     >
-                        {selectedTeam.label}
+                        {
+                            activeProject ? projects.find(p => p.id === activeProject)?.name : "Select a project"
+                        }
                         <ChevronsUpDown className="ml-auto h-4 w-4 shrink-0 opacity-50" />
                     </Button>
                 </PopoverTrigger>
@@ -87,29 +92,25 @@ export default function ProjectSwitch({ className }: ProjectSwitchProps) {
                         <CommandList>
                             <CommandInput placeholder="Search project..." />
                             <CommandEmpty>No project found.</CommandEmpty>
-                            {groups.map((group) => (
-                                <CommandGroup key={group.label} heading={group.label}>
-                                    {group.teams.map((team) => (
-                                        <CommandItem
-                                            key={team.value}
-                                            onSelect={() => {
-                                                setSelectedTeam(team)
-                                                setOpen(false)
-                                            }}
-                                            className="text-sm"
-                                        >
-                                            {team.label}
-                                            <CheckIcon
-                                                className={cn(
-                                                    "ml-auto h-4 w-4",
-                                                    selectedTeam.value === team.value
-                                                        ? "opacity-100"
-                                                        : "opacity-0"
-                                                )}
-                                            />
-                                        </CommandItem>
-                                    ))}
-                                </CommandGroup>
+                            {projects.map((project) => (
+                                <CommandItem
+                                    key={project.id}
+                                    onSelect={() => {
+                                        updateActiveProject(project.id)
+                                        setOpen(false)
+                                    }}
+                                    className="text-sm"
+                                >
+                                    {project.name}
+                                    <CheckIcon
+                                        className={cn(
+                                            "ml-auto h-4 w-4",
+                                            activeProject === project.id
+                                                ? "opacity-100"
+                                                : "opacity-0"
+                                        )}
+                                    />
+                                </CommandItem>
                             ))}
                         </CommandList>
                         <CommandSeparator />
@@ -119,7 +120,7 @@ export default function ProjectSwitch({ className }: ProjectSwitchProps) {
                                     <CommandItem
                                         onSelect={() => {
                                             setOpen(false)
-                                            setShowNewTeamDialog(true)
+                                            updateOpenNewTab(true)
                                         }}
                                     >
                                         <PlusCircle className="mr-2 h-5 w-5" />
@@ -142,31 +143,17 @@ export default function ProjectSwitch({ className }: ProjectSwitchProps) {
                     <div className="space-y-4 py-2 pb-4">
                         <div className="space-y-2">
                             <Label htmlFor="name">Project name</Label>
-                            <Input id="name" placeholder="World Contract" />
-                        </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="plan">Subscription plan</Label>
-                            <Select value="free">
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Select a plan" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="free">
-                                        <span className="font-medium">Free</span> -{" "}
-                                        <span className="text-muted-foreground">
-                                            One person can work alone
-                                        </span>
-                                    </SelectItem>
-                                </SelectContent>
-                            </Select>
+                            <Input id="name" placeholder="World Contract" value={newProjectName} onChange={(e) => {
+                                setNewProjectName(e.target.value)
+                            }} />
                         </div>
                     </div>
                 </div>
                 <DialogFooter>
-                    <Button variant="outline" onClick={() => setShowNewTeamDialog(false)}>
+                    <Button variant="outline" onClick={() => updateOpenNewTab(false)}>
                         Cancel
                     </Button>
-                    <Button type="submit">Continue</Button>
+                    <Button type="submit" onClick={createProject}>Continue</Button>
                 </DialogFooter>
             </DialogContent>
         </Dialog>

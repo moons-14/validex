@@ -1,4 +1,4 @@
-import { AppHeader, BottomBar, SideBar, SidePanel, TabBar } from '@/components/layout'
+import { AppHeader, BottomBar, MainContent, SideBar, SidePanel, TabBar } from '@/components/layout'
 import './globals.css'
 import type { Metadata } from 'next'
 import { Noto_Sans } from 'next/font/google'
@@ -27,8 +27,10 @@ export default function RootLayout({
             <SideBar />
             <SidePanel />
             <div className='flex-1'>
-              <TabBar />
-              {children}
+              <MainContent>
+                <TabBar />
+                {children}
+              </MainContent>
             </div>
           </div>
           <BottomBar />

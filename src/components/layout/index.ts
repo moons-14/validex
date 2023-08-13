@@ -3,3 +3,4 @@ export * from "./BottomBar";
 export * from "./SideBar";
 export * from "./SidePanel";
 export * from "./TabBar";
+export * from "./MainContent";

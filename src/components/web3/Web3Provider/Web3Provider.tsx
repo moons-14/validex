@@ -1,6 +1,7 @@
 "use client"
 import { useWeb3Store } from "@/store/useWeb3Store";
 import { useEffect, useState } from "react"
+import 'viem/window';
 
 export const Web3Provider = ({
     children
@@ -25,7 +26,7 @@ export const Web3Provider = ({
 
     useEffect(() => {
 
-        if (typeof window.ethereum !== 'undefined' && window.ethereum.isMetaMask) {
+        if (typeof window !== 'undefined' && typeof window.ethereum !== 'undefined' && window.ethereum.isMetaMask) {
             window.ethereum.request({ method: 'eth_requestAccounts' })
                 .then(async (accounts: any) => {
                     setAccounts(accounts)
