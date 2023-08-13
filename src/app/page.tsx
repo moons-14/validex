@@ -1,7 +1,10 @@
+import { CallAndTransact, ContractSettings } from "@/components/content";
+
 export default function Home() {
   return (
-    <main>
-
-    </main>
+    <>
+      <CallAndTransact />
+      {/* <ContractSettings /> */}
+    </>
   )
 }

@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input"
 
 export const ProjectPanel = () => {
     return (<>
-        <div className="h-full w-72 border-gray-400 border-r">
+        <div className="h-full">
             <div className="px-4 py-4">
                 <ProjectSwitch />
             </div>

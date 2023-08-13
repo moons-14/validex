@@ -76,13 +76,13 @@ export default function ProjectSwitch({ className }: ProjectSwitchProps) {
                         role="combobox"
                         aria-expanded={open}
                         aria-label="Select a project"
-                        className={cn("w-64 justify-between", className)}
+                        className={cn("w-56 xl:w-64 justify-between", className)}
                     >
                         {selectedTeam.label}
                         <ChevronsUpDown className="ml-auto h-4 w-4 shrink-0 opacity-50" />
                     </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-64 p-0">
+                <PopoverContent className="w-56 xl:w-64 p-0">
                     <Command>
                         <CommandList>
                             <CommandInput placeholder="Search project..." />
