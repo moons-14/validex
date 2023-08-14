@@ -385,12 +385,12 @@ const TransactCard = (
                 })
                 contractProvider[transact.functionName](...sendValue, { value: amountInWei })
                     .then((result: any) => {
-                        setResult(result)
+                        setResult(JSON.stringify(superjson.serialize(result).json))
                         setResultOpen(true)
                         setResultError("")
                     })
                     .catch((error: any) => {
-                        setResultError(error.message)
+                        setResultError(JSON.stringify(superjson.serialize(error).json))
                         setResultErrorOpen(true)
                         setResult("")
                     })
@@ -410,12 +410,12 @@ const TransactCard = (
             })
             contractProvider[transact.functionName](...sendValue)
                 .then((result: any) => {
-                    setResult(result)
+                    setResult(JSON.stringify(superjson.serialize(result).json))
                     setResultOpen(true)
                     setResultError("")
                 })
                 .catch((error: any) => {
-                    setResultError(error.message)
+                    setResultError(JSON.stringify(superjson.serialize(error).json))
                     setResultErrorOpen(true)
                     setResult("")
                 })

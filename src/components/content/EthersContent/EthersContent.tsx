@@ -2,25 +2,27 @@
 import { Button } from "@/components/ui/button";
 import { useValidexStore } from "@/store/useValidexStore";
 import Editor, { useMonaco } from "@monaco-editor/react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import shallow from "zustand/shallow";
+import { ethers } from "ethers";
 
 export const EthersContent = () => {
 
-    const { contract } = useValidexStore(
+    const { contract, updateEthersResult, updateEthersError, updateScript, activeContract, activeProject, } = useValidexStore(
         (state) => ({
             contract: state.projects.find(
                 (project) => project.id === state.activeProject
             )?.contracts.find((contract) => contract.id === state.activeContract),
+            updateEthersResult: state.updateEthersResult,
+            updateEthersError: state.updateEthersError,
+            updateScript: state.updateScript,
+            activeContract: state.activeContract,
+            activeProject: state.activeProject,
         }),
         shallow
     );
 
     const monaco = useMonaco();
-    // const { contract, contractTag } = useContracts();
-    // const { toolData, setScript } = useToolData();
-    const [results, setResults] = useState<string[]>([]);
-    const [error, setError] = useState("");
 
     const javascriptCode = `/* already imported ethers for global
 inserted Web3Provider as provider to global
@@ -33,10 +35,27 @@ console.log(\`\${address} has \${ethers.utils.formatEther(balance)}ETH\`)`;
 
     const [script, setScript] = useState(javascriptCode);
 
+    useEffect(() => {
+        if (!activeProject || !activeContract) return;
+
+        const timer = setTimeout(() => {
+            if (activeProject) {
+                updateScript(activeProject, activeContract, script)
+            }
+        }, 500)
+
+        return () => clearTimeout(timer)
+    }, [script, activeContract])
+
+    useEffect(() => {
+        if (!contract) return;
+        setScript(contract.ethers.script || javascriptCode);
+    }, [contract?.ethers.script]);
+
     const runScript = async () => {
         if (!window.ethereum) return;
         if (!contract) return;
-
+        if (!activeProject || !activeContract) return;
         // @ts-expect-error
         window.ethers = ethers;
         // @ts-expect-error
@@ -45,48 +64,52 @@ console.log(\`\${address} has \${ethers.utils.formatEther(balance)}ETH\`)`;
         window.contract = new ethers.Contract(contract.address, contract.abi.abi ? JSON.parse(contract.abi.abi) : [], provider.getSigner());
 
         const backup = console.log;
-        setError("");
+        updateEthersError(activeProject, activeContract, "");
         try {
-            let resultTmp = results;
+            let resultTmp: string[] = [];
             window.console.log = (any) => {
                 resultTmp = [...resultTmp, String(any)];
             };
             await eval(`(async ()=>{${script}})()`);
-            setResults(resultTmp);
+            updateEthersResult(activeProject, activeContract, resultTmp);
         } catch (e) {
-            setError(String(e));
+            updateEthersError(activeProject, activeContract, String(e));
         } finally {
             window.console.log = backup;
         }
     };
 
     return (
-        <div className="card bg-base-100 gap-4 py-4 shadow-lg">
-            <h2 className="px-4 text-2xl font-bold">Ethers Playground</h2>
-            <Editor
-                height="60dvh"
-                defaultLanguage="javascript"
-                path={`files:///${contract?.name || "default"}.js`}
-                defaultValue={javascriptCode}
-                onChange={(e) => setScript(e || "")}
-            />
-            <div className="flex justify-end">
-                <Button className="mx-4 w-48" onClick={runScript}>
-                    Run
-                </Button>
-            </div>
-            {results.length > 0 && (
-                <pre className="mockup-code mx-4 overflow-x-auto pl-2">
-                    {results.map((result, i) => (
-                        <pre data-prefix="$" key={`${i}/${result}`}>
-                            <code>{result}</code>
-                        </pre>
-                    ))}
-                </pre>
-            )}
-            {error && (
-                <div className="text-error text-lg font-bold">Error: {error}</div>
-            )}
-        </div>
+        <>
+            {
+                contract ?
+                    <div className="card bg-base-100 gap-4 py-4 shadow-lg">
+                        <h2 className="px-4 text-2xl font-bold mb-3">Ethers Playground</h2>
+                        <Editor
+                            height="60dvh"
+                            defaultLanguage="javascript"
+                            path={`files:///${contract?.name || "default"}.js`}
+                            defaultValue={javascriptCode}
+                            onChange={(e) => setScript(e || "")}
+                        />
+                        <div className="flex justify-end">
+                            <Button className="mx-4 w-48" onClick={runScript}>
+                                Run
+                            </Button>
+                        </div>
+                        {contract.ethers.result.length > 0 && (
+                            <pre className="mockup-code mx-4 overflow-x-auto pl-2">
+                                {contract.ethers.result.map((result, i) => (
+                                    <pre data-prefix="$" key={`${i}/${result}`}>
+                                        <code>{result}</code>
+                                    </pre>
+                                ))}
+                            </pre>
+                        )}
+                        {contract.ethers.error && (
+                            <div className="text-error text-lg font-bold">Error: {contract.ethers.error}</div>
+                        )}
+                    </div> : <></>}
+        </>
     );
 };

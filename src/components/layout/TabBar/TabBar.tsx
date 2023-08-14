@@ -46,11 +46,6 @@ export const TabBar = () => {
             icon: <ListVideo size={16} />,
             name: "List view",
             id: "listView"
-        },
-        {
-            icon: <LayoutDashboard size={16} />,
-            name: "Customize Panel",
-            id: "customizePanel"
         }
     ]
 

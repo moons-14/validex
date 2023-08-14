@@ -28,6 +28,11 @@ export type ValidexStore = {
                     pin: boolean,
                 }[],
             },
+            ethers: {
+                script: string,
+                result: string[],
+                error: string,
+            },
             abi: {
                 abi: string,
                 proxy: boolean,
@@ -128,6 +133,9 @@ export type ValidexStore = {
     removeGlobalPin: (id: string) => void,
     updateSearchWorld: (searchWord: string) => void,
     updateOpenNewTab: (openNewTab: boolean) => void,
+    updateScript: (projectId: string, id: string, script: string) => void,
+    updateEthersResult: (projectId: string, id: string, result: string[]) => void,
+    updateEthersError: (projectId: string, id: string, error: string) => void,
 }
 
 export const useValidexStore = createWithEqualityFn(
@@ -189,7 +197,12 @@ export const useValidexStore = createWithEqualityFn(
                             transactFilter: "all",
                             transactList: contract.transacts,
                         },
-                        abi: contract.abi
+                        abi: contract.abi,
+                        ethers: {
+                            script: "",
+                            result: [],
+                            error: "",
+                        }
                     }]
                 } : project)
             }),
@@ -440,6 +453,42 @@ export const useValidexStore = createWithEqualityFn(
             }),
             updateOpenNewTab: (openNewTab: boolean) => set({
                 openNewTab: openNewTab
+            }),
+            updateScript: (projectId: string, id: string, script: string) => set({
+                projects: get().projects.map(project => project.id === projectId ? {
+                    ...project,
+                    contracts: project.contracts.map(s => s.id === id ? {
+                        ...s,
+                        ethers: {
+                            ...s.ethers,
+                            script: script
+                        }
+                    } : s)
+                } : project)
+            }),
+            updateEthersResult: (projectId: string, id: string, result: string[]) => set({
+                projects: get().projects.map(project => project.id === projectId ? {
+                    ...project,
+                    contracts: project.contracts.map(s => s.id === id ? {
+                        ...s,
+                        ethers: {
+                            ...s.ethers,
+                            result: result
+                        }
+                    } : s)
+                } : project)
+            }),
+            updateEthersError: (projectId: string, id: string, error: string) => set({
+                projects: get().projects.map(project => project.id === projectId ? {
+                    ...project,
+                    contracts: project.contracts.map(s => s.id === id ? {
+                        ...s,
+                        ethers: {
+                            ...s.ethers,
+                            error: error
+                        }
+                    } : s)
+                } : project)
             }),
         }),
         {
