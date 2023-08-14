@@ -1,12 +1,19 @@
 "use client"
+import { useToast } from "@/components/ui/use-toast"
+import { copyTextToClipboard } from "@/components/utils/copyTextToClipboard"
 import { useValidexStore } from "@/store/useValidexStore"
 import { Terminal } from "lucide-react"
 import shallow from "zustand/shallow"
 
 export const BottomBar = () => {
+    const { toast } = useToast()
 
     const { activeContract } = useValidexStore(
-        (state) => ({ activeContract: state.activeContract }),
+        (state) => ({
+            activeContract: state.projects.find(
+                (project) => project.id === state.activeProject
+            )?.contracts.find((contract) => contract.id === state.activeContract)?.address ?? null
+        }),
         shallow
     )
 
@@ -17,11 +24,17 @@ export const BottomBar = () => {
         {
             activeContract ?
                 <>
-                    <button className="px-2 truncate max-w-[60dvh]">
+                    <button className="px-2 truncate max-w-[60dvh]" onClick={() => {
+                        copyTextToClipboard(activeContract)
+                        toast({
+                            title: "Copy Contract Address",
+                            description: activeContract,
+                        })
+                    }}>
                         Working contract: {activeContract}
                     </button>
                 </> : null
         }
 
-    </div>)
+    </div >)
 }

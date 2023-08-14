@@ -14,7 +14,7 @@ export const Abi = () => {
 
     const { toast } = useToast();
 
-    const { contracts, updateUseProxy, updateAbi, activeContract, activeProject } = useValidexStore(
+    const { contracts, updateUseProxy, updateAbi, activeContract, activeProject, overrideTransacts } = useValidexStore(
         (state) => ({
             contracts: state.projects.find(
                 (project) => project.id === state.activeProject
@@ -22,7 +22,8 @@ export const Abi = () => {
             updateUseProxy: state.updateUseProxy,
             updateAbi: state.updateAbi,
             activeContract: state.activeContract,
-            activeProject: state.activeProject
+            activeProject: state.activeProject,
+            overrideTransacts: state.overrideTransacts,
         }),
         shallow
     );
@@ -41,14 +42,62 @@ export const Abi = () => {
         if (!activeProject || !activeContract) return;
         if (abi) {
             //abiを適用する
+            const provider = new ethers.providers.Web3Provider(window.ethereum);
+            const objectAbi = JSON.parse(abi);
+            const contractData = new ethers.Contract(contracts.address, objectAbi || [], provider?.getSigner());
+            const functions = Object.entries(contractData.interface.functions);
+            const transacts = functions.map((func) => {
+                const id = crypto.randomUUID();
+                return {
+                    id: id,
+                    functionName: func[1].name,
+                    type: func[1].stateMutability == "view" ? "call" : "transact",
+                    payable: func[1].payable,
+                    result: "",
+                    resultError: "",
+                    pin: false,
+                    args: func[1].inputs.map((input) => {
+                        return {
+                            id: crypto.randomUUID(),
+                            name: input.name ? input.name : input.type,
+                            type: input.type,
+                            value: "",
+                        }
+                    }),
+                }
+            })
             updateAbi(activeProject, activeContract, abi);
+            overrideTransacts(activeProject, activeContract, transacts)
         } else {
             const provider = new ethers.providers.Web3Provider(window.ethereum);
             const abi = await loadAbi(provider as ethers.providers.Provider, contracts.address, {
                 backProxy: proxy,
             });
+            const contractData = new ethers.Contract(contracts.address, abi || [], provider?.getSigner());
+            const functions = Object.entries(contractData.interface.functions);
+            const transacts = functions.map((func) => {
+                const id = crypto.randomUUID();
+                return {
+                    id: id,
+                    functionName: func[1].name,
+                    type: null,
+                    payable: func[1].payable,
+                    result: "",
+                    resultError: "",
+                    pin: false,
+                    args: func[1].inputs.map((input) => {
+                        return {
+                            id: crypto.randomUUID(),
+                            name: input.name ? input.name : input.type,
+                            type: input.type,
+                            value: "",
+                        }
+                    }),
+                }
+            })
             setAbi(abi);
             updateAbi(activeProject, activeContract, abi);
+            overrideTransacts(activeProject, activeContract, transacts)
         }
         updateUseProxy(activeProject, activeContract, proxy);
         toast({

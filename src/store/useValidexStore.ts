@@ -23,7 +23,7 @@ export type ValidexStore = {
                         type: string,
                         value: string,
                     }[],
-                    type: "call" | "transact",
+                    type: "call" | "transact" | null,
                     payable: boolean,
                     result: string,
                     resultError: string,
@@ -63,7 +63,22 @@ export type ValidexStore = {
         abi: {
             abi: string,
             proxy: boolean,
-        }
+        },
+        transacts: {
+            id: string,
+            functionName: string,
+            args: {
+                id: string,
+                name: string,
+                type: string,
+                value: string,
+            }[],
+            type: "call" | "transact" | null,
+            payable: boolean,
+            result: string,
+            resultError: string,
+            pin: boolean,
+        }[]
     }) => void,
     deleteContract: (projectId: string, id: string) => void,
     updateContractAddress: (projectId: string, id: string, address: string) => void,
@@ -80,13 +95,29 @@ export type ValidexStore = {
             type: string,
             value: string,
         }[],
-        type: "call" | "transact",
+        type: "call" | "transact" | null,
+        payable: boolean,
+        result: string,
+        resultError: string,
+        pin: boolean,
+    }[]) => void,
+    overrideTransacts: (projectId: string, id: string, transacts: {
+        id: string,
+        functionName: string,
+        args: {
+            id: string,
+            name: string,
+            type: string,
+            value: string,
+        }[],
+        type: "call" | "transact" | null,
         payable: boolean,
         result: string,
         resultError: string,
         pin: boolean,
     }[]) => void,
     deleteTransact: (projectId: string, id: string, transactId: string) => void,
+    deleteAllTransact: (projectId: string, id: string) => void,
     updateTransactFunctionName: (projectId: string, id: string, transactId: string, functionName: string) => void,
     updateTransactArgs: (projectId: string, id: string, transactId: string, args: {
         id: string,
@@ -94,7 +125,7 @@ export type ValidexStore = {
         type: string,
         value: string,
     }[]) => void,
-    updateTransactType: (projectId: string, id: string, transactId: string, type: "call" | "transact") => void,
+    updateTransactType: (projectId: string, id: string, transactId: string, type: "call" | "transact" | null) => void,
     updateTransactPayable: (projectId: string, id: string, transactId: string, payable: boolean) => void,
     updateTransactResult: (projectId: string, id: string, transactId: string, result: string) => void,
     updateTransactResultError: (projectId: string, id: string, transactId: string, resultError: string) => void,
@@ -143,7 +174,22 @@ export const useValidexStore = createWithEqualityFn(
                 abi: {
                     abi: string,
                     proxy: boolean,
-                }
+                },
+                transacts: {
+                    id: string,
+                    functionName: string,
+                    args: {
+                        id: string,
+                        name: string,
+                        type: string,
+                        value: string,
+                    }[],
+                    type: "call" | "transact" | null,
+                    payable: boolean,
+                    result: string,
+                    resultError: string,
+                    pin: boolean,
+                }[]
             }) => set({
                 projects: get().projects.map(project => project.id === projectId ? {
                     ...project,
@@ -155,7 +201,8 @@ export const useValidexStore = createWithEqualityFn(
                             transactFilter: "all",
                             transactList: [],
                         },
-                        abi: contract.abi
+                        abi: contract.abi,
+                        transacts: contract.transacts
                     }]
                 } : project)
             }),
@@ -216,7 +263,7 @@ export const useValidexStore = createWithEqualityFn(
                     type: string,
                     value: string,
                 }[],
-                type: "call" | "transact",
+                type: "call" | "transact" | null,
                 payable: boolean,
                 result: string,
                 resultError: string,
@@ -233,6 +280,32 @@ export const useValidexStore = createWithEqualityFn(
                     } : contract)
                 } : project)
             }),
+            overrideTransacts: (projectId: string, id: string, transacts: {
+                id: string,
+                functionName: string,
+                args: {
+                    id: string,
+                    name: string,
+                    type: string,
+                    value: string,
+                }[],
+                type: "call" | "transact" | null,
+                payable: boolean,
+                result: string,
+                resultError: string,
+                pin: boolean,
+            }[]) => set({
+                projects: get().projects.map(project => project.id === projectId ? {
+                    ...project,
+                    contracts: project.contracts.map(contract => contract.id === id ? {
+                        ...contract,
+                        callAndTransact: {
+                            ...contract.callAndTransact,
+                            transactList: [...transacts]
+                        }
+                    } : contract)
+                } : project)
+            }),
             deleteTransact: (projectId: string, id: string, transactId: string) => set({
                 projects: get().projects.map(project => project.id === projectId ? {
                     ...project,
@@ -241,6 +314,18 @@ export const useValidexStore = createWithEqualityFn(
                         callAndTransact: {
                             ...contract.callAndTransact,
                             transactList: contract.callAndTransact.transactList.filter(transact => transact.id !== transactId)
+                        }
+                    } : contract)
+                } : project)
+            }),
+            deleteAllTransact: (projectId: string, id: string) => set({
+                projects: get().projects.map(project => project.id === projectId ? {
+                    ...project,
+                    contracts: project.contracts.map(contract => contract.id === id ? {
+                        ...contract,
+                        callAndTransact: {
+                            ...contract.callAndTransact,
+                            transactList: []
                         }
                     } : contract)
                 } : project)
@@ -280,7 +365,7 @@ export const useValidexStore = createWithEqualityFn(
                     } : contract)
                 } : project)
             }),
-            updateTransactType: (projectId: string, id: string, transactId: string, type: "call" | "transact") => set({
+            updateTransactType: (projectId: string, id: string, transactId: string, type: "call" | "transact" | null) => set({
                 projects: get().projects.map(project => project.id === projectId ? {
                     ...project,
                     contracts: project.contracts.map(contract => contract.id === id ? {
@@ -347,7 +432,10 @@ export const useValidexStore = createWithEqualityFn(
                         ...contract,
                         callAndTransact: {
                             ...contract.callAndTransact,
-                            pin: pin,
+                            transactList: contract.callAndTransact.transactList.map(transact => transact.id === transactId ? {
+                                ...transact,
+                                pin: pin
+                            } : transact)
                         }
                     } : contract)
                 } : project)

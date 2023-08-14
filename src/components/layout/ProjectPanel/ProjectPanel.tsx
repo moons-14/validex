@@ -57,13 +57,36 @@ export const ProjectPanel = () => {
                             abi: {
                                 abi: newContractAbi,
                                 proxy: newContractProxy
-                            }
+                            },
+                            transacts: []
                         })
                     } else {
                         const provider = new ethers.providers.Web3Provider(window.ethereum);
                         const abi = await loadAbi(provider as ethers.providers.Provider, newContractAddress, {
                             backProxy: newContractProxy,
                         });
+                        const contractData = new ethers.Contract(newContractAddress, abi || [], provider?.getSigner());
+                        const functions = Object.entries(contractData.interface.functions);
+                        const transacts = functions.map((func) => {
+                            const id = crypto.randomUUID();
+                            return {
+                                id: id,
+                                functionName: func[1].name,
+                                type: func[1].stateMutability == "view" ? "call" : "transact",
+                                payable: func[1].payable,
+                                result: "",
+                                resultError: "",
+                                pin: false,
+                                args: func[1].inputs.map((input) => {
+                                    return {
+                                        id: crypto.randomUUID(),
+                                        name: input.name ? input.name : input.type,
+                                        type: input.type,
+                                        value: "",
+                                    }
+                                }),
+                            }
+                        })
                         addContract(activeProject, {
                             id: contractId,
                             name: newContractName,
@@ -71,7 +94,8 @@ export const ProjectPanel = () => {
                             abi: {
                                 abi: abi,
                                 proxy: newContractProxy
-                            }
+                            },
+                            transacts: transacts
                         })
                     }
                     setLoading(false);
