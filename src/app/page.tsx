@@ -1,5 +1,5 @@
 "use client";
-import { CallAndTransact, Abi, HomeContent } from "@/components/content";
+import { CallAndTransact, Abi, HomeContent, EthersContent } from "@/components/content";
 import { useValidexStore } from "@/store/useValidexStore";
 import shallow from "zustand/shallow";
 
@@ -24,6 +24,10 @@ export default function Home() {
 
       {
         activeTab == "home" ? <HomeContent /> : null
+      }
+
+      {
+        activeTab == "ethers" ? <EthersContent /> : null
       }
 
     </>

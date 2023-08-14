@@ -49,7 +49,28 @@ export const ProjectPanel = () => {
                 if (isAddress(newContractAddress)) {
                     const contractId = crypto.randomUUID();
                     if (newContractAbi) {
-                        //ABIをそのまま使う
+                        const provider = new ethers.providers.Web3Provider(window.ethereum);
+                        const objectAbi = JSON.parse(newContractAbi);
+                        const contractData = new ethers.Contract(newContractAddress, objectAbi || [], provider?.getSigner());
+                        const functions = Object.entries(contractData.interface.functions);
+                        const transacts = functions.map((func) => {
+                            const id = crypto.randomUUID();
+                            return {
+                                id: id,
+                                functionName: func[1].name,
+                                type: (func[1].stateMutability == "view" ? "call" : "transact") as "call" | "transact",
+                                payable: func[1].payable,
+                                pin: false,
+                                args: func[1].inputs.map((input) => {
+                                    return {
+                                        id: crypto.randomUUID(),
+                                        name: input.name ? input.name : input.type,
+                                        type: input.type,
+                                        value: "",
+                                    }
+                                }),
+                            }
+                        })
                         addContract(activeProject, {
                             id: contractId,
                             name: newContractName,
@@ -58,8 +79,8 @@ export const ProjectPanel = () => {
                                 abi: newContractAbi,
                                 proxy: newContractProxy
                             },
-                            transacts: []
-                        })
+                            transacts: transacts
+                        });
                     } else {
                         const provider = new ethers.providers.Web3Provider(window.ethereum);
                         const abi = await loadAbi(provider as ethers.providers.Provider, newContractAddress, {
@@ -72,10 +93,8 @@ export const ProjectPanel = () => {
                             return {
                                 id: id,
                                 functionName: func[1].name,
-                                type: func[1].stateMutability == "view" ? "call" : "transact",
+                                type: (func[1].stateMutability == "view" ? "call" : "transact") as "call" | "transact",
                                 payable: func[1].payable,
-                                result: "",
-                                resultError: "",
                                 pin: false,
                                 args: func[1].inputs.map((input) => {
                                     return {
@@ -100,6 +119,10 @@ export const ProjectPanel = () => {
                     }
                     setLoading(false);
                     setOpenNewContract(false);
+                    setNewContractName("");
+                    setNewContractAddress("");
+                    setNewContractAbi("");
+                    setNewContractProxy(false);
                 } else {
                     setLoading(false);
                     toast({

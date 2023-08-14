@@ -123,7 +123,7 @@ export type ValidexStore = {
     updateAbi: (projectId: string, id: string, abi: string) => void,
     updateUseProxy: (projectId: string, id: string, useProxy: boolean) => void,
     updateActiveProject: (projectId: string) => void,
-    updateActiveContract: (id: string) => void,
+    updateActiveContract: (id: string | null) => void,
     addGlobalPin: (id: string, functionName: string) => void,
     removeGlobalPin: (id: string) => void,
     updateSearchWorld: (searchWord: string) => void,
@@ -187,10 +187,9 @@ export const useValidexStore = createWithEqualityFn(
                         callAndTransact: {
                             searchTransact: "",
                             transactFilter: "all",
-                            transactList: [],
+                            transactList: contract.transacts,
                         },
-                        abi: contract.abi,
-                        transacts: contract.transacts
+                        abi: contract.abi
                     }]
                 } : project)
             }),
@@ -421,7 +420,7 @@ export const useValidexStore = createWithEqualityFn(
             updateActiveProject: (projectId: string) => set({
                 activeProject: projectId
             }),
-            updateActiveContract: (id: string) => set({
+            updateActiveContract: (id: string | null) => set({
                 activeContract: id
             }),
             addGlobalPin: (id: string, functionName: string) => set({

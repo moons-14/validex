@@ -47,9 +47,9 @@ export default function ProjectSwitch({ className }: ProjectSwitchProps) {
 
     const [open, setOpen] = React.useState(false);
     const [newProjectName, setNewProjectName] = React.useState("");
-    const { projects, activeProject, updateActiveProject, openNewTab, updateOpenNewTab, addProject } = useValidexStore(
+    const { projects, activeProject, updateActiveProject, openNewTab, updateOpenNewTab, addProject, updateActiveContract } = useValidexStore(
         (state) => ({
-            projects: state.projects, activeProject: state.activeProject, updateActiveProject: state.updateActiveProject, openNewTab: state.openNewTab, updateOpenNewTab: state.updateOpenNewTab, addProject: state.addProject
+            projects: state.projects, activeProject: state.activeProject, updateActiveProject: state.updateActiveProject, openNewTab: state.openNewTab, updateOpenNewTab: state.updateOpenNewTab, addProject: state.addProject, updateActiveContract: state.updateActiveContract
         }),
         shallow
     );
@@ -62,7 +62,9 @@ export default function ProjectSwitch({ className }: ProjectSwitchProps) {
                 name: newProjectName,
             })
             updateActiveProject(projectUUID)
+            updateActiveContract(null)
             updateOpenNewTab(false)
+            setNewProjectName("")
         } else {
             toast({
                 title: "Please enter a project name",
@@ -97,6 +99,7 @@ export default function ProjectSwitch({ className }: ProjectSwitchProps) {
                                     key={project.id}
                                     onSelect={() => {
                                         updateActiveProject(project.id)
+                                        updateActiveContract(project.activeContract)
                                         setOpen(false)
                                     }}
                                     className="text-sm"

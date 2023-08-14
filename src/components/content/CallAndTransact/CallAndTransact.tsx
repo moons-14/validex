@@ -402,7 +402,7 @@ const TransactCard = (
                 if (transact.args[i].type.includes("int")) {
                     try {
                         return ethers.BigNumber.from(v)
-                    } catch (e) {
+                    } catch (e: any) {
                         setResultError(e.message)
                     }
                 }

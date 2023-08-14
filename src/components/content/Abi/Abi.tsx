@@ -51,10 +51,8 @@ export const Abi = () => {
                 return {
                     id: id,
                     functionName: func[1].name,
-                    type: func[1].stateMutability == "view" ? "call" : "transact",
+                    type: (func[1].stateMutability == "view" ? "call" : "transact") as "call" | "transact",
                     payable: func[1].payable,
-                    result: "",
-                    resultError: "",
                     pin: false,
                     args: func[1].inputs.map((input) => {
                         return {
@@ -80,10 +78,8 @@ export const Abi = () => {
                 return {
                     id: id,
                     functionName: func[1].name,
-                    type: null,
+                    type: (func[1].stateMutability == "view" ? "call" : "transact") as "call" | "transact",
                     payable: func[1].payable,
-                    result: "",
-                    resultError: "",
                     pin: false,
                     args: func[1].inputs.map((input) => {
                         return {
