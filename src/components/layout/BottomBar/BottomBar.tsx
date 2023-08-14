@@ -5,8 +5,8 @@ import shallow from "zustand/shallow"
 
 export const BottomBar = () => {
 
-    const { activeContact } = useValidexStore(
-        (state) => ({ activeContact: state.activeContact }),
+    const { activeContract } = useValidexStore(
+        (state) => ({ activeContract: state.activeContract }),
         shallow
     )
 
@@ -15,10 +15,10 @@ export const BottomBar = () => {
             <Terminal size={20} />
         </button>
         {
-            activeContact ?
+            activeContract ?
                 <>
                     <button className="px-2 truncate max-w-[60dvh]">
-                        Working contract: {activeContact}
+                        Working contract: {activeContract}
                     </button>
                 </> : null
         }

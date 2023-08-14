@@ -13,6 +13,9 @@ import { useToast } from "@/components/ui/use-toast"
 import { isAddress } from 'viem'
 import { clsx } from "clsx"
 import { Textarea } from "@/components/ui/textarea"
+import { Checkbox } from "@/components/ui/checkbox"
+import { loadAbi } from "@/components/utils/loadAbi"
+import { ethers } from "ethers"
 
 export const ProjectPanel = () => {
     const { toast } = useToast()
@@ -28,31 +31,59 @@ export const ProjectPanel = () => {
     );
     const [filterContract, setFilterContract] = useState(contracts?.contractFilter || "");
     const [openNewContract, setOpenNewContract] = useState(false);
-    const [newContactName, setNewContactName] = useState("");
-    const [newContactAddress, setNewContactAddress] = useState("");
+    const [newContractName, setNewContractName] = useState("");
+    const [newContractAddress, setNewContractAddress] = useState("");
     const [newContractAbi, setNewContractAbi] = useState("");
     const [newContractProxy, setNewContractProxy] = useState(false);
+    const [loading, setLoading] = useState(false);
 
     const changeFilterContract = (e: any) => {
         setFilterContract(e.target.value);
     }
 
-    const addContractContinue = () => {
+    const addContractContinue = async () => {
+        if (!window.ethereum) return;
+        setLoading(true);
         if (activeProject) {
-            if (newContactName && newContactAddress) {
-                if (isAddress(newContactAddress)) {
-                    addContract(activeProject, {
-                        id: crypto.randomUUID(),
-                        name: newContactName,
-                        address: newContactAddress
-                    })
+            if (newContractName && newContractAddress) {
+                if (isAddress(newContractAddress)) {
+                    const contractId = crypto.randomUUID();
+                    if (newContractAbi) {
+                        //ABIをそのまま使う
+                        addContract(activeProject, {
+                            id: contractId,
+                            name: newContractName,
+                            address: newContractAddress,
+                            abi: {
+                                abi: newContractAbi,
+                                proxy: newContractProxy
+                            }
+                        })
+                    } else {
+                        const provider = new ethers.providers.Web3Provider(window.ethereum);
+                        const abi = await loadAbi(provider as ethers.providers.Provider, newContractAddress, {
+                            backProxy: newContractProxy,
+                        });
+                        addContract(activeProject, {
+                            id: contractId,
+                            name: newContractName,
+                            address: newContractAddress,
+                            abi: {
+                                abi: abi,
+                                proxy: newContractProxy
+                            }
+                        })
+                    }
+                    setLoading(false);
                     setOpenNewContract(false);
                 } else {
+                    setLoading(false);
                     toast({
                         title: "Invalid contract address.",
                     })
                 }
             } else {
+                setLoading(false);
                 toast({
                     title: "Contract name and address are required.",
                 })
@@ -97,7 +128,7 @@ export const ProjectPanel = () => {
                             </div>
                             <div className="px-4 pt-4 pb-4">
                                 <Input
-                                    placeholder="Filter contact..."
+                                    placeholder="Filter contract..."
                                     className="h-8 w-full"
                                     value={filterContract}
                                     onChange={changeFilterContract}
@@ -146,14 +177,14 @@ export const ProjectPanel = () => {
                                     <div className="space-y-4 py-2 pb-4">
                                         <div className="space-y-2">
                                             <Label htmlFor="name">Contract name</Label>
-                                            <Input id="name" placeholder="World Contract" value={newContactName} onChange={(e) => {
-                                                setNewContactName(e.target.value);
+                                            <Input id="name" placeholder="World Contract" value={newContractName} onChange={(e) => {
+                                                setNewContractName(e.target.value);
                                             }} />
                                         </div>
                                         <div className="space-y-2">
                                             <Label htmlFor="address">Contract address</Label>
-                                            <Input id="address" placeholder="0x00" value={newContactAddress} onChange={(e) => {
-                                                setNewContactAddress(e.target.value);
+                                            <Input id="address" placeholder="0x00" value={newContractAddress} onChange={(e) => {
+                                                setNewContractAddress(e.target.value);
                                             }} />
                                         </div>
                                         <div className="space-y-2">
@@ -162,11 +193,16 @@ export const ProjectPanel = () => {
                                                 setNewContractAbi(e.target.value);
                                             }} />
                                         </div>
-                                        <div className="space-y-2">
-                                            <Label htmlFor="address">Contract address</Label>
-                                            <Input id="address" placeholder="0x00" value={newContactAddress} onChange={(e) => {
-                                                setNewContactAddress(e.target.value);
-                                            }} />
+                                        <div className="flex items-center space-x-2 cursor-pointer" onClick={() => {
+                                            setNewContractProxy(!newContractProxy);
+                                        }} >
+                                            <Checkbox id="proxy" checked={newContractProxy} />
+                                            <label
+                                                htmlFor="proxy"
+                                                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                                            >
+                                                Read beyond the proxy
+                                            </label>
                                         </div>
                                     </div>
                                 </div>
@@ -174,7 +210,11 @@ export const ProjectPanel = () => {
                                     <Button variant="outline" onClick={() => updateOpenNewTab(false)}>
                                         Cancel
                                     </Button>
-                                    <Button type="submit" onClick={addContractContinue}>Continue</Button>
+                                    <Button type="submit" onClick={addContractContinue} disabled={loading}>
+                                        {
+                                            loading ? "Loading" : "Continue"
+                                        }
+                                    </Button>
                                 </DialogFooter>
                             </DialogContent>
                         </Dialog>

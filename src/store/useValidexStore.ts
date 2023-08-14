@@ -60,6 +60,10 @@ export type ValidexStore = {
         id: string,
         address: string,
         name: string,
+        abi: {
+            abi: string,
+            proxy: boolean,
+        }
     }) => void,
     deleteContract: (projectId: string, id: string) => void,
     updateContractAddress: (projectId: string, id: string, address: string) => void,
@@ -136,6 +140,10 @@ export const useValidexStore = createWithEqualityFn(
                 id: string,
                 address: string,
                 name: string,
+                abi: {
+                    abi: string,
+                    proxy: boolean,
+                }
             }) => set({
                 projects: get().projects.map(project => project.id === projectId ? {
                     ...project,
@@ -147,10 +155,7 @@ export const useValidexStore = createWithEqualityFn(
                             transactFilter: "all",
                             transactList: [],
                         },
-                        abi: {
-                            abi: "",
-                            proxy: false,
-                        }
+                        abi: contract.abi
                     }]
                 } : project)
             }),

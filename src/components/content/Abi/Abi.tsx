@@ -4,8 +4,9 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { useToast } from "@/components/ui/use-toast"
+import { loadAbi } from "@/components/utils/loadAbi"
 import { useValidexStore } from "@/store/useValidexStore"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import shallow from "zustand/shallow"
 
 export const Abi = () => {
@@ -28,7 +29,12 @@ export const Abi = () => {
     const [abi, setAbi] = useState(contracts?.abi.abi || "");
     const [proxy, setProxy] = useState(contracts?.abi.proxy || false);
 
-    const applyAbi = () => {
+    useEffect(() => {
+        setAbi(contracts?.abi.abi || "");
+        setProxy(contracts?.abi.proxy || false);
+    }, [activeContract, activeProject])
+
+    const applyAbi = async () => {
         if (!activeProject || !activeContract) return;
         if (abi) {
             //abiを適用する
