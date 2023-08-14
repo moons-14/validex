@@ -1,6 +1,8 @@
 "use client"
 import { Button } from "@/components/ui/button";
 import { useValidexStore } from "@/store/useValidexStore";
+import { ethers } from "ethers";
+import { useEffect } from "react";
 import shallow from "zustand/shallow";
 
 export const MainContent = ({
@@ -9,11 +11,12 @@ export const MainContent = ({
     children: React.ReactNode
 }) => {
 
-    const { activeProject, activeContract, updateOpenNewTab } = useValidexStore(
+    const { activeProject, activeContract, updateOpenNewTab, project } = useValidexStore(
         (state) => ({
             activeProject: state.activeProject,
             activeContract: state.activeContract,
-            updateOpenNewTab: state.updateOpenNewTab
+            updateOpenNewTab: state.updateOpenNewTab,
+            project: state.projects.find((project) => project.id === state.activeProject)
         }),
         shallow
     );
@@ -37,4 +40,9 @@ export const MainContent = ({
             </div>
         </>}
     </>)
+}
+
+async function isContract(provider: any, address: string): Promise<boolean> {
+    const code = await provider.getCode(address);
+    return code && code !== '0x';
 }
