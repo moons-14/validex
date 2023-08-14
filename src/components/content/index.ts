@@ -1,2 +1,2 @@
 export * from "./CallAndTransact";
-export * from "./ContractSettings";
+export * from "./Abi";

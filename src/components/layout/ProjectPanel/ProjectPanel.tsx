@@ -1,3 +1,4 @@
+"use client"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import ProjectSwitch from "../ProjectSwitch/ProjectSwitch"
 import { Button } from "@/components/ui/button"
@@ -11,6 +12,7 @@ import { Label } from "@/components/ui/label"
 import { useToast } from "@/components/ui/use-toast"
 import { isAddress } from 'viem'
 import { clsx } from "clsx"
+import { Textarea } from "@/components/ui/textarea"
 
 export const ProjectPanel = () => {
     const { toast } = useToast()
@@ -28,6 +30,8 @@ export const ProjectPanel = () => {
     const [openNewContract, setOpenNewContract] = useState(false);
     const [newContactName, setNewContactName] = useState("");
     const [newContactAddress, setNewContactAddress] = useState("");
+    const [newContractAbi, setNewContractAbi] = useState("");
+    const [newContractProxy, setNewContractProxy] = useState(false);
 
     const changeFilterContract = (e: any) => {
         setFilterContract(e.target.value);
@@ -144,6 +148,18 @@ export const ProjectPanel = () => {
                                             <Label htmlFor="name">Contract name</Label>
                                             <Input id="name" placeholder="World Contract" value={newContactName} onChange={(e) => {
                                                 setNewContactName(e.target.value);
+                                            }} />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label htmlFor="address">Contract address</Label>
+                                            <Input id="address" placeholder="0x00" value={newContactAddress} onChange={(e) => {
+                                                setNewContactAddress(e.target.value);
+                                            }} />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label htmlFor="abi">Contract Abi (optional)</Label>
+                                            <Textarea id="abi" placeholder="Type contract Abi (optional)" rows={6} value={newContractAbi} onChange={(e) => {
+                                                setNewContractAbi(e.target.value);
                                             }} />
                                         </div>
                                         <div className="space-y-2">
