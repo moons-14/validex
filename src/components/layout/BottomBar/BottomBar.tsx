@@ -35,6 +35,10 @@ export const BottomBar = () => {
                     </button>
                 </> : null
         }
-
+        <div className="flex flex-1 justify-end">
+            <button className="px-4">
+                Open in Etherscan
+            </button>
+        </div>
     </div >)
 }

@@ -9,13 +9,22 @@ import { Separator } from "@/components/ui/separator"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ValidexStore, useValidexStore } from "@/store/useValidexStore"
 import clsx from "clsx"
-import { ChevronDownIcon, Pin, PlusIcon, StarIcon } from "lucide-react"
+import { ethers } from "ethers"
+import { CheckCircle, ChevronDownIcon, Pin, PlusIcon, StarIcon, XCircle } from "lucide-react"
 import { useEffect, useState } from "react"
 import shallow from "zustand/shallow"
+import {
+    Accordion,
+    AccordionContent,
+    AccordionItem,
+    AccordionTrigger,
+} from "@/components/ui/accordion"
+import { useToast } from "@/components/ui/use-toast"
+import superjson from 'superjson';
 
 export const CallAndTransact = () => {
 
-    const { contract, activeContract, activeProject, updateContractName, updateContractTransactFilter, updateTransactPin, globalContractPins, updateContractSearchTransact, addGlobalPin, removeGlobalPin } = useValidexStore(
+    const { contract, activeContract, activeProject, updateContractName, updateContractTransactFilter, updateTransactPin, globalContractPins, updateContractSearchTransact, addGlobalPin, removeGlobalPin, updateTransactResult, updateTransactResultError } = useValidexStore(
         (state) => ({
             contract: state.projects.find(
                 (project) => project.id === state.activeProject
@@ -113,6 +122,7 @@ export const CallAndTransact = () => {
                                                             globalContractPins={globalContractPins}
                                                             addGlobalPin={addGlobalPin}
                                                             removeGlobalPin={removeGlobalPin}
+                                                            contract={contract}
                                                         />)
                                                     })
                                             }
@@ -131,6 +141,7 @@ export const CallAndTransact = () => {
                                                             globalContractPins={globalContractPins}
                                                             addGlobalPin={addGlobalPin}
                                                             removeGlobalPin={removeGlobalPin}
+                                                            contract={contract}
                                                         />)
                                                     })
                                             }
@@ -165,6 +176,7 @@ export const CallAndTransact = () => {
                                                             globalContractPins={globalContractPins}
                                                             addGlobalPin={addGlobalPin}
                                                             removeGlobalPin={removeGlobalPin}
+                                                            contract={contract}
                                                         />)
                                                     })
                                             }
@@ -183,6 +195,7 @@ export const CallAndTransact = () => {
                                                             globalContractPins={globalContractPins}
                                                             addGlobalPin={addGlobalPin}
                                                             removeGlobalPin={removeGlobalPin}
+                                                            contract={contract}
                                                         />)
                                                     })
                                             }
@@ -217,6 +230,7 @@ export const CallAndTransact = () => {
                                                             globalContractPins={globalContractPins}
                                                             addGlobalPin={addGlobalPin}
                                                             removeGlobalPin={removeGlobalPin}
+                                                            contract={contract}
                                                         />)
                                                     })
                                             }
@@ -235,6 +249,7 @@ export const CallAndTransact = () => {
                                                             globalContractPins={globalContractPins}
                                                             addGlobalPin={addGlobalPin}
                                                             removeGlobalPin={removeGlobalPin}
+                                                            contract={contract}
                                                         />)
                                                     })
                                             }
@@ -266,6 +281,7 @@ export const CallAndTransact = () => {
                                                             globalContractPins={globalContractPins}
                                                             addGlobalPin={addGlobalPin}
                                                             removeGlobalPin={removeGlobalPin}
+                                                            contract={contract}
                                                         />)
                                                     })
                                             }
@@ -283,6 +299,7 @@ export const CallAndTransact = () => {
                                                             globalContractPins={globalContractPins}
                                                             addGlobalPin={addGlobalPin}
                                                             removeGlobalPin={removeGlobalPin}
+                                                            contract={contract}
                                                         />)
                                                     })
                                             }
@@ -306,6 +323,7 @@ const TransactCard = (
         globalContractPins,
         addGlobalPin,
         removeGlobalPin,
+        contract,
     }: {
         transact: ValidexStore["projects"][0]["contracts"][0]["callAndTransact"]["transactList"][0],
         updateTransactPin: ValidexStore["updateTransactPin"],
@@ -314,8 +332,97 @@ const TransactCard = (
         globalContractPins: ValidexStore["globalContractPins"],
         addGlobalPin: ValidexStore["addGlobalPin"],
         removeGlobalPin: ValidexStore["removeGlobalPin"],
+        contract: ValidexStore["projects"][0]["contracts"][0],
     }
 ) => {
+    const { toast } = useToast()
+
+    const [result, setResult] = useState<any>("");
+    const [resultError, setResultError] = useState<any>("");
+
+    const [resultOpen, setResultOpen] = useState<boolean>(true);
+    const [resultErrorOpen, setResultErrorOpen] = useState<boolean>(true);
+
+    const [payValue, setPayValue] = useState<string>("");
+
+    const [value, setValue] = useState<string[]>(transact.args.map(v => v.value));
+
+    const callButton = (contract: ValidexStore["projects"][0]["contracts"][0], transact: ValidexStore["projects"][0]["contracts"][0]["callAndTransact"]["transactList"][0]) => {
+        if (transact.type == "transact") return;
+        if (!contract) return;
+
+        const provider = new ethers.providers.Web3Provider(window.ethereum);
+        const contractProvider = new ethers.Contract(contract.address, contract.abi.abi ? JSON.parse(contract.abi.abi) : [], provider.getSigner());
+        contractProvider[transact.functionName](...value)
+            .then((result: any) => {
+                setResult(JSON.stringify(superjson.serialize(result).json))
+                setResultOpen(true)
+                setResultError("")
+            })
+            .catch((error: any) => {
+                setResultError(JSON.stringify(superjson.serialize(error).json))
+                setResultErrorOpen(true)
+                setResult("")
+            })
+    }
+
+    const runButton = (contract: ValidexStore["projects"][0]["contracts"][0], transact: ValidexStore["projects"][0]["contracts"][0]["callAndTransact"]["transactList"][0]) => {
+        if (transact.type == "call") return;
+        if (!contract) return;
+        if (transact.payable) {
+            if (payValue == "") {
+                toast({
+                    title: "Payable",
+                    description: "Payable value is not empty",
+                })
+                return;
+            } else {
+                const amountInWei = ethers.utils.parseEther(payValue);
+                const provider = new ethers.providers.Web3Provider(window.ethereum);
+                const contractProvider = new ethers.Contract(contract.address, contract.abi.abi ? JSON.parse(contract.abi.abi) : [], provider.getSigner());
+                const sendValue = value.map((v, i) => {
+                    return transact.args[i].type == "bigint" ? ethers.BigNumber.from(v) : v;
+                })
+                contractProvider[transact.functionName](...sendValue, { value: amountInWei })
+                    .then((result: any) => {
+                        setResult(result)
+                        setResultOpen(true)
+                        setResultError("")
+                    })
+                    .catch((error: any) => {
+                        setResultError(error.message)
+                        setResultErrorOpen(true)
+                        setResult("")
+                    })
+            }
+        } else {
+            const provider = new ethers.providers.Web3Provider(window.ethereum);
+            const contractProvider = new ethers.Contract(contract.address, contract.abi.abi ? JSON.parse(contract.abi.abi) : [], provider.getSigner());
+            const sendValue = value.map((v, i) => {
+                if (transact.args[i].type.includes("int")) {
+                    try {
+                        return ethers.BigNumber.from(v)
+                    } catch (e) {
+                        setResultError(e.message)
+                    }
+                }
+                return v;
+            })
+            contractProvider[transact.functionName](...sendValue)
+                .then((result: any) => {
+                    setResult(result)
+                    setResultOpen(true)
+                    setResultError("")
+                })
+                .catch((error: any) => {
+                    setResultError(error.message)
+                    setResultErrorOpen(true)
+                    setResult("")
+                })
+        }
+
+    }
+
     return (<Card className="my-4">
         <CardHeader>
             <div className="flex items-center justify-between">
@@ -325,7 +432,7 @@ const TransactCard = (
                         ({
                             transact.args.map(v => v.name).join(" , ")
                         })</CardTitle>
-                    <CardDescription>{transact.type == "call" ? "call" : transact.type == "transact" ? "transact" : "Call or Transact"} - {transact.payable ? "payable" : "not payable"} - {transact.args.length}arg</CardDescription>
+                    <CardDescription>{transact.type == "call" ? "call" : transact.type == "transact" ? "transact" : "Call or Transact"} - {transact.payable ? "payable" : "not payable"} - {transact.args.length}args</CardDescription>
                 </div>
                 <div className="w-28">
                     <div className={clsx("flex items-center space-x-1 rounded-md", transact.pin ? "text-primary-foreground bg-primary" : "text-secondary-foreground bg-secondary")}>
@@ -387,7 +494,13 @@ const TransactCard = (
                         <div className="grid w-full items-center gap-4">
                             <div className="flex flex-col space-y-1.5">
                                 <Label>Pay Value</Label>
-                                <Input placeholder="Pay Value" />
+                                <Input placeholder="Pay Value"
+                                    type="number"
+                                    value={payValue?.toString() || ""}
+                                    onChange={(e) => {
+                                        setPayValue(e.target.value)
+                                    }}
+                                />
                             </div>
                         </div>
                         <Separator />
@@ -399,7 +512,15 @@ const TransactCard = (
                         return (<div className="grid w-full items-center gap-4" key={"all" + index}>
                             <div className="flex flex-col space-y-1.5">
                                 <Label>{arg.name + " (" + arg.type + ")"}</Label>
-                                <Input placeholder={arg.name} />
+                                <Input
+                                    placeholder={arg.name}
+                                    value={value[index] || ""}
+                                    onChange={(e) => {
+                                        const newValue = [...value]
+                                        newValue[index] = e.target.value
+                                        setValue(newValue)
+                                    }}
+                                />
                             </div>
                         </div>)
                     })
@@ -407,25 +528,67 @@ const TransactCard = (
 
             </div>
         </CardContent>
-        <CardFooter className="flex justify-end">
-            {
-                transact.type == "call" ?
-                    <Button className="w-36" variant="secondary">
-                        Call
-                    </Button>
-                    : transact.type == "transact" ?
-                        <Button className="w-36" variant={transact.payable ? "destructive" : "default"}>
-                            Run
+        <CardFooter className="block">
+            <div className="flex justify-end w-full">
+                {
+                    transact.type == "call" ?
+                        <Button className="w-36" variant="secondary" onClick={() => {
+                            callButton(contract, transact)
+                        }}>
+                            Call
                         </Button>
-                        : <div className="flex gap-6">
-                            <Button className="w-36" variant="secondary">
-                                Call
-                            </Button>
-                            <Button className="w-36" variant={transact.payable ? "destructive" : "default"}>
+                        : transact.type == "transact" ?
+                            <Button className="w-36" variant={transact.payable ? "destructive" : "default"} onClick={() => {
+                                runButton(contract, transact)
+                            }}>
                                 Run
                             </Button>
-                        </div>
-            }
+                            : <div className="flex gap-6">
+                                <Button className="w-36" variant="secondary" onClick={() => {
+                                    callButton(contract, transact)
+                                }}>
+                                    Call
+                                </Button>
+                                <Button className="w-36" variant={transact.payable ? "destructive" : "default"} onClick={() => {
+                                    runButton(contract, transact)
+                                }}>
+                                    Run
+                                </Button>
+                            </div>
+                }
+            </div><Accordion type="multiple" value={[
+                resultOpen ? "result" : "",
+                resultErrorOpen ? "resultError" : ""
+            ]} >
+                {result ? <>
+
+                    <AccordionItem value="result">
+                        <AccordionTrigger onClick={() => {
+                            setResultOpen(!resultOpen)
+                        }}>Result</AccordionTrigger>
+                        <AccordionContent className="break-all">
+                            {result}
+                        </AccordionContent>
+                    </AccordionItem>
+
+                </> : <></>
+                }
+                {resultError ? <>
+                    <AccordionItem value="resultError">
+                        <AccordionTrigger onClick={() => {
+                            setResultErrorOpen(!resultErrorOpen)
+                        }}>
+                            <span className="text-red-500">
+                                Error
+                            </span>
+                        </AccordionTrigger>
+                        <AccordionContent className="text-red-500 break-all">
+                            {resultError}
+                        </AccordionContent>
+                    </AccordionItem>
+                </> : <></>
+                }
+            </Accordion>
         </CardFooter>
     </Card>)
 }
