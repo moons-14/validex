@@ -6,6 +6,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { useToast } from "@/components/ui/use-toast"
 import { loadAbi } from "@/components/utils/loadAbi"
 import { useValidexStore } from "@/store/useValidexStore"
+import { ethers } from "ethers"
 import { useEffect, useState } from "react"
 import shallow from "zustand/shallow"
 
@@ -35,16 +36,19 @@ export const Abi = () => {
     }, [activeContract, activeProject])
 
     const applyAbi = async () => {
+        if (!window.ethereum) return;
+        if (!contracts) return;
         if (!activeProject || !activeContract) return;
         if (abi) {
             //abiを適用する
             updateAbi(activeProject, activeContract, abi);
         } else {
-            if (proxy) {
-                //proxy設定無しでabiを推測する
-            } else {
-                //proxy設定無しでabiを推測する
-            }
+            const provider = new ethers.providers.Web3Provider(window.ethereum);
+            const abi = await loadAbi(provider as ethers.providers.Provider, contracts.address, {
+                backProxy: proxy,
+            });
+            setAbi(abi);
+            updateAbi(activeProject, activeContract, abi);
         }
         updateUseProxy(activeProject, activeContract, proxy);
         toast({

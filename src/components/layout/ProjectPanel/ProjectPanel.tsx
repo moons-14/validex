@@ -156,7 +156,7 @@ export const ProjectPanel = () => {
                                                     }}
                                                 >
                                                     <Code2 size={20} />
-                                                    <div className="truncate break-all">
+                                                    <div className="truncate break-all overflow-hidden">
                                                         {contract.name ? contract.name : contract.address}
                                                     </div>
                                                 </Button>)

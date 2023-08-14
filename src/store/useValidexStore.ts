@@ -149,7 +149,7 @@ export const useValidexStore = createWithEqualityFn(
                     ...project,
                     contracts: [...project.contracts, {
                         ...contract,
-                        activeTab: "abi",
+                        activeTab: "callAndTransact",
                         callAndTransact: {
                             searchTransact: "",
                             transactFilter: "all",
