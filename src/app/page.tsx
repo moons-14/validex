@@ -1,5 +1,5 @@
 "use client";
-import { CallAndTransact, Abi, HomeContent, EthersContent, ByteTool } from "@/components/content";
+import { CallAndTransact, Abi, HomeContent, EthersContent, ByteTool, ListView } from "@/components/content";
 import { useValidexStore } from "@/store/useValidexStore";
 import shallow from "zustand/shallow";
 
@@ -32,6 +32,10 @@ export default function Home() {
 
       {
         activeTab == "byteTool" ? <ByteTool /> : null
+      }
+
+      {
+        activeTab == "listView" ? <ListView /> : null
       }
 
     </>

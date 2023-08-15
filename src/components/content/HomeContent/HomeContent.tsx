@@ -65,7 +65,7 @@ export const HomeContent = () => {
 
     return (<>
         {contracts ?
-            <div className="col-span-3 lg:col-span-4 lg:border-l">
+            <div className="col-span-3">
                 <div className="h-full px-4 py-6 lg:px-8">
                     <div className="space-y-6">
                         <div className="grid w-full gap-1.5">

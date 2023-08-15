@@ -22,7 +22,11 @@ import {
 import { useToast } from "@/components/ui/use-toast"
 import superjson from 'superjson';
 
-export const CallAndTransact = () => {
+export const CallAndTransact = ({
+    withoutScrollArea = false,
+}: {
+    withoutScrollArea?: boolean
+}) => {
 
     const { contract, activeContract, activeProject, updateContractName, updateContractTransactFilter, updateTransactPin, globalContractPins, updateContractSearchTransact, addGlobalPin, removeGlobalPin, updateTransactResult, updateTransactResultError } = useValidexStore(
         (state) => ({
@@ -62,7 +66,7 @@ export const CallAndTransact = () => {
 
     return (<>
         {contract && activeProject && activeContract ?
-            <div className="col-span-3 lg:col-span-4 lg:border-l">
+            <div className="col-span-3">
                 <div className="h-full px-4 py-6 lg:px-8">
                     <Tabs defaultValue="all" className="h-full space-y-6" value={contract.callAndTransact.transactFilter}>
                         <div className="space-between items-center pb-8 hidden md:flex">
@@ -106,7 +110,7 @@ export const CallAndTransact = () => {
                                         .length == 0 ?
                                         <div className="flex items-center justify-center text-3xl h-[calc(100dvh-18rem)]">
                                             transact not found
-                                        </div> : <ScrollArea className="h-[calc(100dvh-18rem)] px-3">
+                                        </div> : <ChangeScrollArea withoutScrollArea>
                                             {
                                                 contract.callAndTransact.transactList
                                                     .filter((transact) => (transact.type == "call"))
@@ -145,7 +149,7 @@ export const CallAndTransact = () => {
                                                         />)
                                                     })
                                             }
-                                        </ScrollArea>
+                                        </ChangeScrollArea>
                                 }
                             </div>
                         </TabsContent>
@@ -160,7 +164,7 @@ export const CallAndTransact = () => {
                                         .length == 0 ?
                                         <div className="flex items-center justify-center text-3xl h-[calc(100dvh-18rem)]">
                                             transact not found
-                                        </div> : <ScrollArea className="h-[calc(100dvh-18rem)] px-3">
+                                        </div> : <ChangeScrollArea withoutScrollArea>
                                             {
                                                 contract.callAndTransact.transactList
                                                     .filter((transact) => (!transact.payable && transact.type == "transact"))
@@ -199,7 +203,7 @@ export const CallAndTransact = () => {
                                                         />)
                                                     })
                                             }
-                                        </ScrollArea>
+                                        </ChangeScrollArea>
                                 }
                             </div>
                         </TabsContent>
@@ -214,7 +218,7 @@ export const CallAndTransact = () => {
                                         .length == 0 ?
                                         <div className="flex items-center justify-center text-3xl h-[calc(100dvh-18rem)]">
                                             transact not found
-                                        </div> : <ScrollArea className="h-[calc(100dvh-18rem)] px-3">
+                                        </div> : <ChangeScrollArea withoutScrollArea>
                                             {
                                                 contract.callAndTransact.transactList
                                                     .filter((transact) => transact.payable)
@@ -253,7 +257,7 @@ export const CallAndTransact = () => {
                                                         />)
                                                     })
                                             }
-                                        </ScrollArea>
+                                        </ChangeScrollArea>
                                 }
                             </div>
                         </TabsContent>
@@ -266,7 +270,7 @@ export const CallAndTransact = () => {
                                     contract.callAndTransact.transactList.length == 0 ?
                                         <div className="flex items-center justify-center text-3xl h-[calc(100dvh-18rem)]">
                                             transact not found
-                                        </div> : <ScrollArea className="h-[calc(100dvh-18rem)] px-3">
+                                        </div> : <ChangeScrollArea withoutScrollArea>
                                             {
                                                 contract.callAndTransact.transactList
                                                     .filter((transact) => transact.pin || globalContractPins.find(pin => pin.functionName == transact.functionName))
@@ -303,7 +307,7 @@ export const CallAndTransact = () => {
                                                         />)
                                                     })
                                             }
-                                        </ScrollArea>
+                                        </ChangeScrollArea>
                                 }
                             </div>
                         </TabsContent>
@@ -591,4 +595,24 @@ const TransactCard = (
             </Accordion>
         </CardFooter>
     </Card>)
+}
+
+const ChangeScrollArea = ({
+    children,
+    withoutScrollArea = false
+}: {
+    children: React.ReactNode,
+    withoutScrollArea?: boolean
+}) => {
+    return (
+        <>
+            {
+                withoutScrollArea ? children : <>
+                    <ScrollArea className="h-[calc(100dvh-18rem)] px-3">
+                        {children}
+                    </ScrollArea>
+                </>
+            }
+        </>
+    )
 }

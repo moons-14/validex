@@ -41,8 +41,3 @@ export const MainContent = ({
         </>}
     </>)
 }
-
-async function isContract(provider: any, address: string): Promise<boolean> {
-    const code = await provider.getCode(address);
-    return code && code !== '0x';
-}
