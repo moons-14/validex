@@ -46,7 +46,7 @@ export const TabBar = () => {
             icon: <ListVideo size={16} />,
             name: "List view",
             id: "listView"
-        }
+        },
     ]
 
     return (<>

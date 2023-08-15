@@ -10,6 +10,18 @@ import clsx from "clsx"
 import { ethers } from "ethers"
 import { useEffect, useState } from "react"
 import shallow from "zustand/shallow"
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+} from "@/components/ui/dialog"
+import { solidityCompiler, getCompilerVersions } from "@agnostico/browser-solidity-compiler";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+
 
 export const Abi = ({
     fullButton = false,
@@ -105,6 +117,7 @@ export const Abi = ({
             title: "Updated ABI settings.",
         })
     }
+
 
     return (<>
         {contracts ?
